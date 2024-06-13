@@ -3,10 +3,21 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const path = require('path');
 const Razorpay = require('razorpay');
+require('dotenv').config();
 
 const app = express();
 
-mongoose.connect('mongodb://localhost:27017/charity', { useNewUrlParser: true, useUnifiedTopology: true });
+// Use the MongoDB URI from the .env file
+const mongoURI = process.env.MONGODB_URI;
+
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => console.log('MongoDB connection error:', err));
+
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_SECRET_KEY
+});
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
