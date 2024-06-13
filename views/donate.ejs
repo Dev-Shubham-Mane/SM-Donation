@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Donate</title>
+    <link rel="stylesheet" href="/public/styles.css">
+</head>
+<body>
+<h1>Donate to Charity</h1>
+<form id="donationForm">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required><br>
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required><br>
+    <label for="amount">Amount:</label>
+    <input type="number" id="amount" name="amount" required><br>
+    <button type="submit">Donate</button>
+</form>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    document.getElementById('donationForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const amount = document.getElementById('amount').value;
+
+        const response = await fetch('/donate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, email, amount })
+        });
+        const data = await response.json();
+
+        var options = {
+            "key": "your_razorpay_key_id",
+            "amount": amount * 100,
+            "currency": "INR",
+            "name": "Charity Donation",
+            "description": "Thank you for your generous donation",
+            "order_id": data.order_id,
+            "handler": function (response){
+                fetch('/payment-success', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(response)
+                }).then(() => {
+                    window.location.href = '/success';
+                });
+            },
+            "prefill": {
+                "name": name,
+                "email": email
+            },
+            "theme": {
+                "color": "#3399cc"
+            }
+        };
+        var rzp1 = new Razorpay(options);
+        rzp1.open();
+    });
+</script>
+</body>
+</html>
